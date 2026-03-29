@@ -1,0 +1,796 @@
+openapi: 3.1.0
+info:
+  title: Api
+  version: 0.1.0
+  description: Jarvis AI Assistant API
+servers:
+  - url: /api
+    description: Base API path
+tags:
+  - name: health
+    description: Health operations
+  - name: gemini
+    description: Gemini AI chat and image operations
+  - name: anthropic
+    description: Anthropic AI chat operations
+  - name: jarvis
+    description: Jarvis intent routing and memory
+paths:
+  /healthz:
+    get:
+      operationId: healthCheck
+      tags: [health]
+      summary: Health check
+      description: Returns server health status
+      responses:
+        "200":
+          description: Healthy
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthStatus"
+  /gemini/conversations:
+    get:
+      operationId: listGeminiConversations
+      tags: [gemini]
+      summary: List all conversations
+      responses:
+        "200":
+          description: List of conversations
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/GeminiConversation"
+    post:
+      operationId: createGeminiConversation
+      tags: [gemini]
+      summary: Create a new conversation
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateGeminiConversationBody"
+      responses:
+        "201":
+          description: Created conversation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GeminiConversation"
+  /gemini/conversations/{id}:
+    get:
+      operationId: getGeminiConversation
+      tags: [gemini]
+      summary: Get conversation with messages
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Conversation with messages
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GeminiConversationWithMessages"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GeminiError"
+    delete:
+      operationId: deleteGeminiConversation
+      tags: [gemini]
+      summary: Delete a conversation
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GeminiError"
+  /gemini/conversations/{id}/messages:
+    get:
+      operationId: listGeminiMessages
+      tags: [gemini]
+      summary: List messages in a conversation
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: List of messages
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/GeminiMessage"
+    post:
+      operationId: sendGeminiMessage
+      tags: [gemini]
+      summary: Send a message and receive an AI response (SSE stream)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SendGeminiMessageBody"
+      responses:
+        "200":
+          description: SSE stream of assistant response chunks
+          content:
+            text/event-stream: {}
+  /gemini/generate-image:
+    post:
+      operationId: generateGeminiImage
+      tags: [gemini]
+      summary: Generate an image from a text prompt
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/GenerateGeminiImageBody"
+      responses:
+        "200":
+          description: Generated image data
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GenerateGeminiImageResponse"
+  /anthropic/conversations:
+    get:
+      operationId: listAnthropicConversations
+      tags: [anthropic]
+      summary: List all conversations
+      responses:
+        "200":
+          description: List of conversations
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/AnthropicConversation"
+    post:
+      operationId: createAnthropicConversation
+      tags: [anthropic]
+      summary: Create a new conversation
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateAnthropicConversationBody"
+      responses:
+        "201":
+          description: Created conversation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AnthropicConversation"
+  /anthropic/conversations/{id}:
+    get:
+      operationId: getAnthropicConversation
+      tags: [anthropic]
+      summary: Get conversation with messages
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Conversation with messages
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AnthropicConversationWithMessages"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AnthropicError"
+    delete:
+      operationId: deleteAnthropicConversation
+      tags: [anthropic]
+      summary: Delete a conversation
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AnthropicError"
+  /anthropic/conversations/{id}/messages:
+    get:
+      operationId: listAnthropicMessages
+      tags: [anthropic]
+      summary: List messages in a conversation
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: List of messages
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/AnthropicMessage"
+    post:
+      operationId: sendAnthropicMessage
+      tags: [anthropic]
+      summary: Send a message and receive an AI response (SSE stream)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SendAnthropicMessageBody"
+      responses:
+        "200":
+          description: SSE stream of assistant response chunks
+          content:
+            text/event-stream: {}
+  /jarvis/route:
+    post:
+      operationId: jarvisRoute
+      tags: [jarvis]
+      summary: Route a command through Jarvis intent classifier
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/JarvisRouteBody"
+      responses:
+        "200":
+          description: Routing decision
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/JarvisRouteResponse"
+  /jarvis/conversations:
+    get:
+      operationId: listJarvisConversations
+      tags: [jarvis]
+      summary: List all Jarvis conversations
+      responses:
+        "200":
+          description: List of conversations
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/JarvisConversation"
+    post:
+      operationId: createJarvisConversation
+      tags: [jarvis]
+      summary: Create a new Jarvis conversation
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateJarvisConversationBody"
+      responses:
+        "201":
+          description: Created conversation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/JarvisConversation"
+  /jarvis/conversations/{id}:
+    get:
+      operationId: getJarvisConversation
+      tags: [jarvis]
+      summary: Get Jarvis conversation with messages
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Conversation with messages
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/JarvisConversationWithMessages"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/JarvisError"
+    delete:
+      operationId: deleteJarvisConversation
+      tags: [jarvis]
+      summary: Delete a Jarvis conversation
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+  /jarvis/conversations/{id}/messages:
+    post:
+      operationId: sendJarvisMessage
+      tags: [jarvis]
+      summary: Send a message to Jarvis (auto-routes to right AI, SSE stream)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SendJarvisMessageBody"
+      responses:
+        "200":
+          description: SSE stream with intent type and AI response
+          content:
+            text/event-stream: {}
+    get:
+      operationId: listJarvisMessages
+      tags: [jarvis]
+      summary: List messages in a Jarvis conversation
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: List of messages
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/JarvisMessage"
+  /jarvis/tasks:
+    get:
+      operationId: listJarvisTasks
+      tags: [jarvis]
+      summary: List all tasks and reminders
+      responses:
+        "200":
+          description: List of tasks
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/JarvisTask"
+    post:
+      operationId: createJarvisTask
+      tags: [jarvis]
+      summary: Create a new task or reminder
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateJarvisTaskBody"
+      responses:
+        "201":
+          description: Created task
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/JarvisTask"
+  /jarvis/tasks/{id}:
+    patch:
+      operationId: updateJarvisTask
+      tags: [jarvis]
+      summary: Update a task
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateJarvisTaskBody"
+      responses:
+        "200":
+          description: Updated task
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/JarvisTask"
+    delete:
+      operationId: deleteJarvisTask
+      tags: [jarvis]
+      summary: Delete a task
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+components:
+  schemas:
+    HealthStatus:
+      type: object
+      properties:
+        status:
+          type: string
+      required:
+        - status
+    GeminiConversation:
+      type: object
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - title
+        - createdAt
+    GeminiMessage:
+      type: object
+      properties:
+        id:
+          type: integer
+        conversationId:
+          type: integer
+        role:
+          type: string
+        content:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - conversationId
+        - role
+        - content
+        - createdAt
+    CreateGeminiConversationBody:
+      type: object
+      properties:
+        title:
+          type: string
+      required:
+        - title
+    SendGeminiMessageBody:
+      type: object
+      properties:
+        content:
+          type: string
+      required:
+        - content
+    GeminiConversationWithMessages:
+      type: object
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        messages:
+          type: array
+          items:
+            $ref: "#/components/schemas/GeminiMessage"
+      required:
+        - id
+        - title
+        - createdAt
+        - messages
+    GenerateGeminiImageBody:
+      type: object
+      properties:
+        prompt:
+          type: string
+      required:
+        - prompt
+    GenerateGeminiImageResponse:
+      type: object
+      properties:
+        b64_json:
+          type: string
+        mimeType:
+          type: string
+      required:
+        - b64_json
+        - mimeType
+    GeminiError:
+      type: object
+      properties:
+        error:
+          type: string
+      required:
+        - error
+    AnthropicConversation:
+      type: object
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - title
+        - createdAt
+    AnthropicMessage:
+      type: object
+      properties:
+        id:
+          type: integer
+        conversationId:
+          type: integer
+        role:
+          type: string
+        content:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - conversationId
+        - role
+        - content
+        - createdAt
+    CreateAnthropicConversationBody:
+      type: object
+      properties:
+        title:
+          type: string
+      required:
+        - title
+    SendAnthropicMessageBody:
+      type: object
+      properties:
+        content:
+          type: string
+      required:
+        - content
+    AnthropicConversationWithMessages:
+      type: object
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        messages:
+          type: array
+          items:
+            $ref: "#/components/schemas/AnthropicMessage"
+      required:
+        - id
+        - title
+        - createdAt
+        - messages
+    AnthropicError:
+      type: object
+      properties:
+        error:
+          type: string
+      required:
+        - error
+    JarvisRouteBody:
+      type: object
+      properties:
+        command:
+          type: string
+      required:
+        - command
+    JarvisRouteResponse:
+      type: object
+      properties:
+        intent:
+          type: string
+        provider:
+          type: string
+        confidence:
+          type: number
+      required:
+        - intent
+        - provider
+        - confidence
+    JarvisConversation:
+      type: object
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - title
+        - createdAt
+    JarvisMessage:
+      type: object
+      properties:
+        id:
+          type: integer
+        conversationId:
+          type: integer
+        role:
+          type: string
+        content:
+          type: string
+        intent:
+          type: string
+        provider:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - conversationId
+        - role
+        - content
+        - createdAt
+    CreateJarvisConversationBody:
+      type: object
+      properties:
+        title:
+          type: string
+      required:
+        - title
+    SendJarvisMessageBody:
+      type: object
+      properties:
+        content:
+          type: string
+      required:
+        - content
+    JarvisConversationWithMessages:
+      type: object
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        messages:
+          type: array
+          items:
+            $ref: "#/components/schemas/JarvisMessage"
+      required:
+        - id
+        - title
+        - createdAt
+        - messages
+    JarvisError:
+      type: object
+      properties:
+        error:
+          type: string
+      required:
+        - error
+    JarvisTask:
+      type: object
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        description:
+          type: string
+        status:
+          type: string
+        priority:
+          type: string
+        dueDate:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - title
+        - status
+        - priority
+        - createdAt
+    CreateJarvisTaskBody:
+      type: object
+      properties:
+        title:
+          type: string
+        description:
+          type: string
+        priority:
+          type: string
+        dueDate:
+          type: string
+      required:
+        - title
+    UpdateJarvisTaskBody:
+      type: object
+      properties:
+        title:
+          type: string
+        description:
+          type: string
+        status:
+          type: string
+        priority:
+          type: string
+        dueDate:
+          type: string
