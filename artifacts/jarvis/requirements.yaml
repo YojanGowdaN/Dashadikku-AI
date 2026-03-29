@@ -1,0 +1,16 @@
+packages:
+  "framer-motion": "For smooth layout transitions and the arc reactor animation"
+  "react-markdown": "For rendering markdown in chat messages"
+  "remark-gfm": "For markdown tables and formatting"
+  "date-fns": "For formatting conversation dates"
+  "clsx": "Utility for constructing className conditionally"
+  "tailwind-merge": "Utility for merging tailwind classes"
+
+images:
+  - path: "artifacts/jarvis/public/images/hologram-grid.png"
+    description: "Futuristic dark blue cyan glowing technical HUD grid background with subtle transparency and geometric lines"
+    aspect_ratio: "16:9"
+
+notes:
+  - "The app uses a forced dark mode to match the JARVIS / Iron Man HUD aesthetic."
+  - "Streaming uses Server-Sent Events consumed manually via fetch and ReadableStream."
