@@ -12,7 +12,7 @@ window.ENV = {
   // ── AI API KEYS ──────────────────────────────────────────────
   // Gemini: used for general chat and image generation
   // Get FREE at → https://aistudio.google.com/app/apikey
-  GEMINI_API_KEY: "AIzaSyC2r9-bOQzwQp_y8x0sAe3KOSSsXb_pLKQ",
+  GEMINI_API_KEY: "YOUR_GEMINI_API_KEY",
 
   // Claude (Anthropic): used for code, charts, flowcharts, plans
   // Get at → https://console.anthropic.com/
